@@ -86,7 +86,8 @@ body{background:#070605!important;color:#f8f3e9!important}
 .sticky-order .arrow{font-size:21px;line-height:1}
 @media(min-width:700px){.sticky-order{padding-bottom:14px}.sticky-order a{min-height:58px}}
 @media(prefers-reduced-motion:reduce){.sticky-order{transition:none}html{scroll-behavior:auto}}
-.price-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap}.compare-price{font-size:13px;line-height:1.5;color:#a99a83;text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}.checkout form.fields .offer .price{line-height:1.35}@media(max-width:380px){.compare-price{font-size:12px}.checkout form.fields .offer .price{font-size:21px}}\n</style>
+.price-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap}.compare-price{font-size:13px;line-height:1.5;color:#a99a83;text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}.checkout form.fields .offer .price{line-height:1.35}@media(max-width:380px){.compare-price{font-size:12px}.checkout form.fields .offer .price{font-size:21px}}
+</style>
 <!-- Snapchat Pixel: X-CORE Power Fit -->
 <script>
 (function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function(){a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};a.queue=[];var s='script';var r=t.createElement(s);r.async=!0;r.src=n;var u=t.getElementsByTagName(s)[0];u.parentNode.insertBefore(r,u)})(window,document,'https://sc-static.net/scevent.min.js');
@@ -169,7 +170,8 @@ form.addEventListener('submit',async e=>{
   let queued=false;
   if(navigator.sendBeacon){try{queued=navigator.sendBeacon('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',new Blob([JSON.stringify(payload)],{type:'text/plain;charset=utf-8'}));}catch(_){}}
   if(!queued){if(navigator.onLine===false)throw new Error('offline');fetch('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}).catch(()=>{});}
-  try{snaptr('track','PURCHASE',{price:o.price,currency:'SAR',transaction_id:transactionId,item_ids:['XCORE-POWER-FIT'],number_items:o.quantity});}catch(_){}\n  status.textContent='تم إرسال بيانات الطلب مبدئيًا. سنتواصل معك لتأكيده قبل الشحن.';status.style.display='block';button.textContent='تم إرسال الطلب ✓';button.disabled=true;
+  try{snaptr('track','PURCHASE',{price:o.price,currency:'SAR',transaction_id:transactionId,item_ids:['XCORE-POWER-FIT'],number_items:o.quantity});}catch(_){}
+  status.textContent='تم إرسال بيانات الطلب مبدئيًا. سنتواصل معك لتأكيده قبل الشحن.';status.style.display='block';button.textContent='تم إرسال الطلب ✓';button.disabled=true;
  }catch(err){button.disabled=false;button.textContent='تأكيد الطلب — الدفع عند الاستلام';status.textContent='تعذر إرسال الطلب الآن. تحقق من اتصال الإنترنت وحاول مرة أخرى.';status.style.display='block';}
 });
 const checkoutSection=document.getElementById('checkout');const stickyOrder=document.getElementById('stickyOrder');
