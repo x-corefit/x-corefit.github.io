@@ -54,6 +54,16 @@ body{background:radial-gradient(circle at 50% 0,#1b140b 0,#090806 26rem);color:v
 .foot{padding:25px 18px;text-align:center;background:#050504;color:#b9ac98;font-size:11px;border-top:1px solid var(--line)}
 @media(min-width:700px){.hero{padding:36px 32px 30px}.gallery{padding:16px 20px 0}.gallery img{border-radius:20px;margin-bottom:19px}.checkout{padding:36px 30px 55px}.checkout form.fields{padding:22px}}
 @media(max-width:430px){.checkout{padding-inline:10px}.checkout form.fields{padding:15px}.offer{padding:14px 11px}.price{font-size:23px}}
+
+/* Keep offer selectors compact inside the unified checkout card */
+.checkout form.fields .offer{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:82px;margin:0;cursor:pointer}
+.checkout form.fields .offerleft{display:flex;align-items:center;gap:10px;min-width:0}
+.checkout form.fields .offer input[type="radio"]{width:21px;height:21px;min-width:21px;padding:0;margin:0;accent-color:#d8ad5d;background:transparent;border:0;box-shadow:none}
+.checkout form.fields .offer .offername,.checkout form.fields .offer .offerdesc{display:block}
+.checkout form.fields .offer .price{white-space:nowrap;text-align:left}
+.checkout form.fields>div[style*="background:#f4f5f7"]{background:#090806!important;border:1px solid rgba(216,173,93,.2)!important;color:#f8f3e9}
+.checkout form.fields>div[style*="background:#f4f5f7"] span{color:#b9ac98!important}
+.checkout form.fields>div[style*="background:#f4f5f7"] strong{color:#f2d18d!important}
 </style></head>
 <body><div class="top">توصيل مجاني لكل المملكة السعودية <span style="color:#b8f32b">•</span> اطلب الآن والدفع عند الاستلام</div><main class="wrap">
 <header class="brand">X-CORE <span style="padding:0 8px;color:#8dbd18">•</span> PERFORMANCE WEAR</header>
