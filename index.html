@@ -54,7 +54,7 @@ body{background:radial-gradient(circle at 50% 0,#1b140b 0,#090806 26rem);color:v
 .status{font-size:13px;text-align:center;color:#f0cf8c;display:none;line-height:1.8}
 .foot{padding:25px 18px;text-align:center;background:#050504;color:#b9ac98;font-size:11px;border-top:1px solid var(--line)}
 @media(min-width:700px){.hero{padding:36px 32px 30px}.gallery{padding:16px 20px 0}.gallery img{border-radius:20px;margin-bottom:19px}.checkout{padding:36px 30px 55px}.checkout form.fields{padding:22px}}
-@media(max-width:430px){.checkout{padding-inline:10px}.checkout form.fields{padding:15px}.offer{padding:14px 11px}.price{font-size:23px}}
+@media(max-width:430px){.social-proof{font-size:11px;padding:7px 10px;margin-bottom:12px}.checkout{padding-inline:10px}.checkout form.fields{padding:15px}.offer{padding:14px 11px}.price{font-size:23px}}
 
 /* Keep offer selectors compact inside the unified checkout card */
 .checkout form.fields .offer{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:82px;margin:0;cursor:pointer}
@@ -74,9 +74,10 @@ body{background:#070605!important;color:#f8f3e9!important}
 .offers{background:#0c0a07!important;color:#f8f3e9!important}
 .checkout{background:#070605!important}
 .checkout form.fields{background:linear-gradient(145deg,#17120b,#090806)!important;border:1px solid rgba(216,173,93,.4)!important}
-.checkout-title{border-top:1px solid rgba(216,173,93,.22);margin-top:8px}
+.checkout-title{border-top:0!important;margin-top:0!important}
 .offer.selected{border-color:#f0c56d!important;box-shadow:0 0 0 2px rgba(240,197,109,.12)!important}
 
+.social-proof{display:flex;align-items:center;justify-content:center;gap:8px;width:fit-content;max-width:100%;margin:0 auto 15px;padding:8px 13px;border:1px solid rgba(216,173,93,.32);border-radius:999px;background:linear-gradient(135deg,rgba(216,173,93,.12),rgba(216,173,93,.035));color:#f1d08b;font-size:12px;font-weight:700;line-height:1.5;box-shadow:0 5px 18px rgba(0,0,0,.16)}.social-proof .proof-star{color:#e8bf68;font-size:15px;line-height:1}
 /* Lightweight premium sticky CTA */
 .sticky-order{position:fixed;z-index:1000;inset-inline:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(7,6,5,0),rgba(7,6,5,.94) 24%);display:flex;justify-content:center;opacity:1;transform:translateY(0);transition:opacity .22s ease,transform .22s ease;pointer-events:auto}
 .sticky-order.is-hidden{opacity:0;transform:translateY(120%);pointer-events:none}
@@ -88,7 +89,7 @@ body{background:#070605!important;color:#f8f3e9!important}
 </style></head>
 <body><div class="top">توصيل مجاني لكل المملكة السعودية <span style="color:#b8f32b">•</span> اطلب الآن والدفع عند الاستلام</div><main class="wrap">
 <header class="brand">X-CORE <span style="padding:0 8px;color:#8dbd18">•</span> PERFORMANCE WEAR</header>
-<section class="hero"><span class="eyebrow">X-CORE · POWER FIT</span><h1>مشد القوة من X-CORE</h1><p>تصميم عملي ينسجم مع قوامك ويمنح إطلالتك مظهرًا رياضيًا مرتبًا، من الصدر والذراعين إلى الظهر والبطن.</p>
+<section class="hero"><span class="eyebrow">X-CORE · POWER FIT</span><div class="social-proof"><span class="proof-star" aria-hidden="true">★</span><span>أكثر من 15,000 عميل راضٍ عن المنتج</span></div><h1>مشد القوة من X-CORE</h1><p>تصميم عملي ينسجم مع قوامك ويمنح إطلالتك مظهرًا رياضيًا مرتبًا، من الصدر والذراعين إلى الظهر والبطن.</p>
 <img class="heroimg" src="https://raw.githubusercontent.com/x-corefit/x-corefit.github.io/main/ChatGPT%20Image%20Aug%2027%2C%202026%2C%2006_41_23%20PM.png" alt="مشد القوة من X-CORE" fetchpriority="high" decoding="async">
 <a class="cta" href="#checkout">اطلب الآن</a><div class="micro">اختر عرضك بالأسفل</div></section>
 <div class="proof"><div><b>تفاصيل مدروسة</b>مظهر رياضي أنيق</div><div><b>X-CORE</b>هوية رياضية مميزة</div><div><b>السعودية</b>توصيل مجاني</div></div>
@@ -114,7 +115,7 @@ body{background:#070605!important;color:#f8f3e9!important}
 
 <section class="checkout" id="checkout">
 <form class="fields" id="orderForm" novalidate>
-<h2>اختر باقتك وأكمل طلبك</h2><p class="sub" style="text-align:center">عرضك وبيانات التوصيل في مكان واحد — الدفع عند الاستلام.</p>
+<h2>اختر باقتك وأكمل طلبك</h2>
 <div class="offerlist">
 <label class="offer selected"><div class="offerleft"><input type="radio" name="offer" value="1" checked><div><div class="offername">اشتري واحدة</div><div class="offerdesc">قطعة واحدة من مشد القوة</div></div></div><div class="price">279 <span class="currency">SAR</span></div></label>
 <label class="offer"><div class="offerleft"><input type="radio" name="offer" value="2"><div><div class="offername">اشتري اثنتين</div><div class="offerdesc">قطعتان من مشد القوة</div></div></div><div class="price">439 <span class="currency">SAR</span></div></label>
