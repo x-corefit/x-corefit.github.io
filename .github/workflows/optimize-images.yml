@@ -1,0 +1,89 @@
+name: Optimize product images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '.github/workflows/optimize-images.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: optimize-product-images
+  cancel-in-progress: false
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image optimizer
+        run: python -m pip install --upgrade Pillow
+      - name: Convert PNG assets to optimized WebP and update page references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import unquote, quote
+          from PIL import Image
+          import re
+
+          root = Path(".")
+          out = root / "optimized"
+          out.mkdir(exist_ok=True)
+          converted = {}
+          for src in root.glob("*.png"):
+              try:
+                  with Image.open(src) as im:
+                      im.load()
+                      if im.width > 1200 or im.height > 1600:
+                          im.thumbnail((1200, 1600), Image.Resampling.LANCZOS)
+                      if im.mode not in ("RGB", "RGBA"):
+                          im = im.convert("RGBA" if "transparency" in im.info else "RGB")
+                      dest = out / (src.stem + ".webp")
+                      im.save(dest, "WEBP", quality=80, method=6)
+                  converted[src.name] = dest.name
+                  print(f"{src.name}: {src.stat().st_size} -> {dest.stat().st_size} bytes")
+              except Exception as exc:
+                  raise RuntimeError(f"Could not optimize {src}: {exc}") from exc
+
+          page = root / "index.html"
+          html = page.read_text(encoding="utf-8")
+          pattern = re.compile(
+              r'https://images\.weserv\.nl/\?url=raw\.githubusercontent\.com%2Fx-corefit%2Fx-corefit\.github\.io%2Fmain%2F([^"&]+\.png)&amp;[^"]*'
+          )
+
+          def replace(match):
+              filename = unquote(match.group(1))
+              webp = converted.get(filename)
+              if not webp:
+                  raise RuntimeError(f"Referenced source image not found in repo: {filename}")
+              return "https://raw.githubusercontent.com/x-corefit/x-corefit.github.io/main/optimized/" + quote(webp, safe="")
+
+          html, count = pattern.subn(replace, html)
+          if count < 20:
+              raise RuntimeError(f"Expected to replace 20 image URLs, replaced only {count}")
+          html = re.sub(r'<meta name="xcore-build" content="[^"]*">', '<meta name="xcore-build" content="2026-10-16-local-webp-final">', html)
+          page.write_text(html, encoding="utf-8")
+          print(f"Updated {count} image URLs to local optimized WebP assets.")
+          PY
+      - name: Commit optimized images and page references
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add optimized index.html
+          if git diff --cached --quiet; then
+            echo "No optimized image changes to commit."
+          else
+            git commit -m "Optimize landing page images as local WebP"
+            git push
+          fi
