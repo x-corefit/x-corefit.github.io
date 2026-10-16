@@ -54,8 +54,8 @@ jobs:
               converted++;
             }
             html = html.replace(
-              /(https:\/\/raw\.githubusercontent\.com\/x-corefit\/x-corefit\.github\.io\/main\/[^"' )]+)\.(?:png|jpe?g)(?=[ "' )])/gi,
-              '$1.webp'
+              /(https:\/\/raw\.githubusercontent\.com\/x-corefit\/x-corefit\.github\.io\/main\/)([^"' )]+?)\.(?:png|jpe?g)(?=[ "' )])/gi,
+              '$1$2.webp'
             );
             fs.writeFileSync(htmlPath, html);
             console.log('Converted', converted, 'images to WebP and updated image URLs.');
