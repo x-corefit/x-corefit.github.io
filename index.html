@@ -176,5 +176,5 @@ form.addEventListener('submit',async e=>{
 });
 const checkoutSection=document.getElementById('checkout');const stickyOrder=document.getElementById('stickyOrder');
 if('IntersectionObserver' in window){const checkoutObserver=new IntersectionObserver(entries=>{stickyOrder.classList.toggle('is-hidden',entries[0].isIntersecting);},{threshold:0.12});checkoutObserver.observe(checkoutSection);}else{window.addEventListener('scroll',()=>{const r=checkoutSection.getBoundingClientRect();stickyOrder.classList.toggle('is-hidden',r.top<innerHeight&&r.bottom>0);},{passive:true});}
-document.querySelectorAll('a[href="#checkout"]').forEach(a=>a.addEventListener('click',()=>{setTimeout(()=>checkoutSection.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}),40);}));
+document.querySelectorAll('a[href="#checkout"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();history.replaceState(null,'','#checkout');const target=form;const jump=()=>{const top=target.getBoundingClientRect().top+window.scrollY-10;window.scrollTo({top,behavior:'auto'});};document.documentElement.style.scrollBehavior='auto';jump();requestAnimationFrame(()=>{jump();setTimeout(jump,180);});}));
 </script></body></html>
