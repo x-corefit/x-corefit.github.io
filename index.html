@@ -40,13 +40,49 @@
 <label class="offer"><div class="offerleft"><input type="radio" name="offer" value="2"><div><div class="offername">اشتري اثنتين</div><div class="offerdesc">قطعتان من مشد القوة</div></div></div><div class="price">439 <span class="currency">SAR</span></div></label>
 </div><a class="cta" href="#checkout">متابعة الطلب</a></section>
 <section class="checkout" id="checkout"><h2>بيانات التوصيل</h2><p class="sub">أدخل بياناتك لتأكيد طلبك.</p>
-<form class="fields" id="orderForm">
-<div><label for="name">الاسم الكامل</label><input id="name" name="name" autocomplete="name" required maxlength="100"></div>
-<div><label for="phone">رقم الهاتف</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="05xxxxxxxx" maxlength="16"></div>
+<form class="fields" id="orderForm" novalidate>
+<div><label for="name">الاسم الكامل</label><input id="name" name="name" autocomplete="name" required minlength="2" maxlength="100"></div>
+<div><label for="phone">رقم الهاتف</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="16" aria-describedby="phoneError"><p class="status" id="phoneError" role="alert" style="display:none;color:#b42318;text-align:right;margin:0"></p></div>
 <div><label for="city">المدينة</label><input id="city" name="city" autocomplete="address-level2" required maxlength="80"></div>
-<button class="submit" type="submit">تأكيد الطلب</button><p class="note">الدفع عند الاستلام حسب تأكيد الطلب.</p><p class="status" id="status" role="status"></p>
+<div style="background:#f4f5f7;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center"><span style="font-size:13px;color:#525761">العرض المختار<br><strong id="summaryOffer" style="color:#191b20">اشتري واحدة</strong></span><strong id="summaryTotal" style="font-size:19px;white-space:nowrap">279 SAR</strong></div>
+<button class="submit" id="submitOrder" type="submit">تأكيد الطلب — الدفع عند الاستلام</button>
+<p class="note">أدخل بياناتك وسنتواصل معك لتأكيد الطلب قبل الشحن.</p><p class="status" id="status" role="status" aria-live="polite"></p>
 </form></section><footer class="foot">X-CORE · مشد القوة</footer></main>
 <script>
-const offerCards=[...document.querySelectorAll('.offer')];offerCards.forEach(card=>card.addEventListener('click',()=>{offerCards.forEach(c=>c.classList.remove('selected'));card.classList.add('selected');card.querySelector('input').checked=true;}));
-const form=document.getElementById('orderForm');form.addEventListener('submit',e=>{e.preventDefault();const phone=document.getElementById('phone').value.replace(/[\s()+-]/g,'');const status=document.getElementById('status');status.style.display='block';if(!/^\d{9,15}$/.test(phone)){status.textContent='يرجى إدخال رقم هاتف صحيح.';return;}status.textContent='التصميم جاهز، لكن إرسال الطلبات إلى Google Sheets وتتبع Snapchat لم يتم تفعليهما بعد.';});
+const offerCards=[...document.querySelectorAll('.offer')];
+const summaryOffer=document.getElementById('summaryOffer');
+const summaryTotal=document.getElementById('summaryTotal');
+const priceMap={'1':{label:'اشتري واحدة',price:279,quantity:1},'2':{label:'اشتري اثنتين',price:439,quantity:2}};
+function chosenOffer(){const value=document.querySelector('input[name="offer"]:checked')?.value||'1';return {code:value,...priceMap[value]};}
+function updateCheckoutSummary(){const o=chosenOffer();summaryOffer.textContent=o.label;summaryTotal.textContent=o.price+' SAR';}
+offerCards.forEach(card=>card.addEventListener('click',()=>{offerCards.forEach(c=>c.classList.remove('selected'));card.classList.add('selected');card.querySelector('input').checked=true;updateCheckoutSummary();}));
+updateCheckoutSummary();
+function normalizeSaudiPhone(value){
+ let v=String(value||'').trim().replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[\s()+\-\u200e\u200f\u061c]/g,'');
+ if(v.startsWith('+966'))v='0'+v.slice(4);else if(v.startsWith('00966'))v='0'+v.slice(5);else if(v.startsWith('966'))v='0'+v.slice(3);else if(/^5\d{8}$/.test(v))v='0'+v;
+ return /^05\d{8}$/.test(v)?v:null;
+}
+const form=document.getElementById('orderForm');
+const status=document.getElementById('status');
+const phoneInput=document.getElementById('phone');
+const phoneError=document.getElementById('phoneError');
+phoneInput.addEventListener('input',()=>{phoneError.style.display='none';phoneError.textContent='';phoneInput.removeAttribute('aria-invalid');status.style.display='none';});
+form.addEventListener('submit',async e=>{
+ e.preventDefault();status.style.display='none';phoneError.style.display='none';
+ const name=document.getElementById('name').value.trim(),phone=normalizeSaudiPhone(phoneInput.value),city=document.getElementById('city').value.trim(),o=chosenOffer();
+ if(name.length<2){status.textContent='يرجى إدخال الاسم الكامل.';status.style.display='block';document.getElementById('name').focus();return;}
+ if(!phone){phoneError.textContent='رقم الهاتف غير صحيح';phoneError.style.display='block';phoneInput.setAttribute('aria-invalid','true');phoneInput.focus();return;}
+ if(city.length<2){status.textContent='يرجى إدخال المدينة.';status.style.display='block';document.getElementById('city').focus();return;}
+ const button=document.getElementById('submitOrder');button.disabled=true;button.textContent='جارٍ إرسال الطلب…';
+ const transactionId='XCORE-POWER-FIT-'+Date.now()+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
+ const q=new URLSearchParams(location.search);
+ const payload={transactionId,product:'مشد القوة من X-CORE',productSku:'XCORE-POWER-FIT',sku:'MULTI-COLLAGEN',receiverSku:'MULTI-COLLAGEN',orderSku:'XCORE-POWER-FIT',name,phone,address:city,city,offer:o.label,offerCode:Number(o.code),quantity:o.quantity,price:o.price,unitPrice:o.price,totalPrice:o.price,orderTotal:o.price,amount:o.price,sellingPrice:o.price,offerPrice:o.price,currency:'SAR',country:'SA',pageUrl:location.href,source:'XCORE Power Fit Landing Page',utm:{utm_source:q.get('utm_source')||'snapchat',utm_medium:q.get('utm_medium')||'landing',utm_campaign:q.get('utm_campaign')||'xcore-power-fit',utm_term:q.get('utm_term')||o.code,utm_content:q.get('utm_content')||'x-corefit.github.io'},timestamp:new Date().toISOString()};
+ try{
+  let queued=false;
+  if(navigator.sendBeacon){try{queued=navigator.sendBeacon('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',new Blob([JSON.stringify(payload)],{type:'text/plain;charset=utf-8'}));}catch(_){}}
+  if(!queued){if(navigator.onLine===false)throw new Error('offline');fetch('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}).catch(()=>{});}
+  status.textContent='تم إرسال بيانات الطلب مبدئيًا. سنتواصل معك لتأكيده قبل الشحن.';status.style.display='block';button.textContent='تم إرسال الطلب ✓';button.disabled=true;
+ }catch(err){button.disabled=false;button.textContent='تأكيد الطلب — الدفع عند الاستلام';status.textContent='تعذر إرسال الطلب الآن. تحقق من اتصال الإنترنت وحاول مرة أخرى.';status.style.display='block';}
+});
+document.querySelectorAll('a[href="#checkout"]').forEach(a=>a.addEventListener('click',()=>{setTimeout(()=>document.getElementById('checkout').scrollIntoView({behavior:'smooth',block:'start'}),40);}));
 </script></body></html>
