@@ -65,6 +65,8 @@ jobs:
           def replace(match):
               source_url = unquote(match.group(1))
               filename = source_url.rsplit("/", 1)[-1]
+              if filename not in converted and not filename.lower().endswith(".png"):
+                  filename += ").png"
               webp = converted.get(filename)
               if not webp:
                   raise RuntimeError(f"Referenced source image not found in repo: {filename}")
