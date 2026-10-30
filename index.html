@@ -146,6 +146,14 @@ function chosenOffer(){const value=document.querySelector('input[name="offer"]:c
 function updateCheckoutSummary(){const o=chosenOffer();summaryOffer.textContent=o.label;summaryTotal.textContent=o.price+' SAR';}
 offerCards.forEach(card=>card.addEventListener('click',()=>{offerCards.forEach(c=>c.classList.remove('selected'));card.classList.add('selected');card.querySelector('input').checked=true;updateCheckoutSummary();}));
 updateCheckoutSummary();
+let xcoreCheckoutTracked=false;
+function trackXcoreCheckout(){
+ if(xcoreCheckoutTracked)return;
+ xcoreCheckoutTracked=true;
+ try{snaptr('track','START_CHECKOUT',{currency:'SAR',price:chosenOffer().price,item_ids:['XCORE-POWER-FIT'],item_category:'XCORE'});}catch(_){}
+}
+form.addEventListener('focusin',trackXcoreCheckout,{once:true});
+form.addEventListener('change',trackXcoreCheckout);
 function normalizeSaudiPhone(value){
  let v=String(value||'').trim().replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[\s()+\-\u200e\u200f\u061c]/g,'');
  if(v.startsWith('+966'))v='0'+v.slice(4);else if(v.startsWith('00966'))v='0'+v.slice(5);else if(v.startsWith('966'))v='0'+v.slice(3);else if(/^5\d{8}$/.test(v))v='0'+v;
@@ -166,13 +174,23 @@ form.addEventListener('submit',async e=>{
  const transactionId='XCORE-POWER-FIT-'+Date.now()+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
  const q=new URLSearchParams(location.search);
  const payload={transactionId,product:'مشد القوة من X-CORE',productSku:'XCORE-POWER-FIT',sku:'MULTI-COLLAGEN',receiverSku:'MULTI-COLLAGEN',orderSku:'XCORE-POWER-FIT',name,phone,address:city,city,offer:o.label,offerCode:Number(o.code),quantity:o.quantity,price:o.price,unitPrice:o.price,totalPrice:o.price,orderTotal:o.price,amount:o.price,sellingPrice:o.price,offerPrice:o.price,currency:'SAR',country:'SA',pageUrl:location.href,source:'XCORE Power Fit Landing Page',utm:{utm_source:q.get('utm_source')||'snapchat',utm_medium:q.get('utm_medium')||'landing',utm_campaign:q.get('utm_campaign')||'xcore-power-fit',utm_term:q.get('utm_term')||o.code,utm_content:q.get('utm_content')||'x-corefit.github.io'},timestamp:new Date().toISOString()};
- try{
-  let queued=false;
-  if(navigator.sendBeacon){try{queued=navigator.sendBeacon('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',new Blob([JSON.stringify(payload)],{type:'text/plain;charset=utf-8'}));}catch(_){}}
-  if(!queued){if(navigator.onLine===false)throw new Error('offline');fetch('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}).catch(()=>{});}
-  try{snaptr('track','PURCHASE',{price:o.price,currency:'SAR',transaction_id:transactionId,item_ids:['XCORE-POWER-FIT'],number_items:o.quantity});}catch(_){}
-  status.textContent='تم إرسال بيانات الطلب مبدئيًا. سنتواصل معك لتأكيده قبل الشحن.';status.style.display='block';button.textContent='تم إرسال الطلب ✓';button.disabled=true;
- }catch(err){button.disabled=false;button.textContent='تأكيد الطلب — الدفع عند الاستلام';status.textContent='تعذر إرسال الطلب الآن. تحقق من اتصال الإنترنت وحاول مرة أخرى.';status.style.display='block';}
+ if(navigator.onLine===false)throw new Error('offline');
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),25000);
+  try{
+   const response=await fetch('https://script.google.com/macros/s/AKfycbxxBGHE4mZ5iDdplvvaFxVhrHoOMETyRoafgk8iG-DGx9vhY27JgFhc3VHFBO22hu4x0w/exec',{
+    method:'POST',mode:'cors',credentials:'omit',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(payload),signal:controller.signal
+   });
+   if(!response.ok)throw new Error('http-error');
+   const result=await response.json();
+   if(!result||result.ok!==true)throw new Error('order-rejected');
+   if(result.sku!=='XCORE-POWER-FIT'||result.sheet!=='X-CORE')throw new Error('receiver-mismatch');
+   try{snaptr('track','PURCHASE',{price:o.price,currency:'SAR',transaction_id:transactionId,client_dedup_id:transactionId,item_ids:['XCORE-POWER-FIT'],number_items:o.quantity});}catch(_){}
+   status.textContent='تم تأكيد تسجيل طلبك بنجاح. سنتواصل معك لتأكيده قبل الشحن.';status.style.display='block';button.textContent='تم استلام الطلب ✓';button.disabled=true;
+  }finally{clearTimeout(timeout);}
+ }catch(err){button.disabled=false;button.textContent='تأكيد الطلب — الدفع عند الاستلام';status.textContent=err.name==='AbortError'?'تأخر تأكيد تسجيل الطلب. لا تكرر الطلب قبل التأكد من وصوله.':err.message==='order-rejected'||err.message==='receiver-mismatch'?'لم يتم تأكيد تسجيل الطلب. لم نعرض رسالة نجاح؛ يرجى مراجعة البيانات والمحاولة لاحقًا.':'تعذر تأكيد تسجيل الطلب. يرجى التحقق من الاتصال والمحاولة لاحقًا.';status.style.display='block';}
 });
 const checkoutSection=document.getElementById('checkout');const stickyOrder=document.getElementById('stickyOrder');
 if('IntersectionObserver' in window){const checkoutObserver=new IntersectionObserver(entries=>{stickyOrder.classList.toggle('is-hidden',entries[0].isIntersecting);},{threshold:0.12});checkoutObserver.observe(checkoutSection);}else{window.addEventListener('scroll',()=>{const r=checkoutSection.getBoundingClientRect();stickyOrder.classList.toggle('is-hidden',r.top<innerHeight&&r.bottom>0);},{passive:true});}
